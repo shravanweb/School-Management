@@ -3,7 +3,12 @@ export default function About() {
     <section id="about" className="section about">
       <div className="container about-grid">
         <div className="about-image-wrap">
-          <div className="about-image" />
+          <img
+            src="/images/school-building.jpg"
+            alt="Master Minds School campus and students"
+            className="about-image"
+            loading="lazy"
+          />
           <div className="about-accent-card">
             <span className="about-accent-number">20+</span>
             <span className="about-accent-text">Years shaping young leaders</span>

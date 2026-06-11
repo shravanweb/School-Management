@@ -22,6 +22,7 @@ export default function Footer() {
             <a href="#about">About</a>
             <a href="#programs">Programs</a>
             <a href="#features">Why Us</a>
+            <a href="#testimonials">Testimonials</a>
             <a href="#contact">Contact</a>
           </div>
           <div>
