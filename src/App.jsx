@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { SchoolProvider } from './context/SchoolContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import LogoLoader from './components/LogoLoader'
 import { ROLES } from './data/seed'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
@@ -11,8 +13,11 @@ import ParentDashboard from './pages/dashboards/ParentDashboard'
 import StudentDashboard from './pages/dashboards/StudentDashboard'
 
 function App() {
+  const [loading, setLoading] = useState(true)
+
   return (
     <SchoolProvider>
+      {loading && <LogoLoader onComplete={() => setLoading(false)} />}
       <BrowserRouter>
         <AuthProvider>
           <Routes>

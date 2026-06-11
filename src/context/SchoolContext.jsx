@@ -13,13 +13,26 @@ function loadData() {
         ...defaults,
         ...parsed,
         principal: parsed.principal ?? defaults.principal,
-        teachers: parsed.teachers ?? defaults.teachers,
-        students: parsed.students ?? defaults.students,
+        teachers: parsed.teachers?.some((t) => t.class === 'Nursery')
+          ? parsed.teachers
+          : defaults.teachers,
+        students: parsed.students?.some((s) => s.class === 'Nursery')
+          ? parsed.students
+          : defaults.students,
         syllabus: parsed.syllabus ?? defaults.syllabus,
         attendance: parsed.attendance ?? defaults.attendance,
         news: parsed.news ?? defaults.news,
         examResults: parsed.examResults ?? defaults.examResults,
         reports: parsed.reports ?? defaults.reports,
+        periods: parsed.periods?.length ? parsed.periods : defaults.periods,
+        timetable: parsed.timetable?.some((t) => t.class === 'Nursery')
+          ? parsed.timetable
+          : defaults.timetable,
+        sports: parsed.sports?.length ? parsed.sports : defaults.sports,
+        holidays: parsed.holidays?.length ? parsed.holidays : defaults.holidays,
+        teacherLeaves: Array.isArray(parsed.teacherLeaves)
+          ? parsed.teacherLeaves
+          : defaults.teacherLeaves,
       }
     }
   } catch {
@@ -62,6 +75,7 @@ export function SchoolProvider({ children }) {
       news: prev.news.filter((n) => n.teacherId !== id),
       examResults: prev.examResults.filter((e) => e.teacherId !== id),
       reports: prev.reports.filter((r) => r.teacherId !== id),
+      teacherLeaves: prev.teacherLeaves.filter((l) => l.teacherId !== id),
     }))
   }
 
@@ -275,13 +289,97 @@ export function SchoolProvider({ children }) {
 
   const getTeachersForStudent = (student) => {
     const teacherIds = new Set([student.teacherId])
-    data.syllabus
-      .filter((s) => s.class === student.class && s.section === student.section)
-      .forEach((s) => teacherIds.add(s.teacherId))
+    data.timetable
+      .filter(
+        (t) => t.class === student.class && t.section === student.section
+      )
+      .forEach((t) => teacherIds.add(t.teacherId))
+    data.teachers
+      .filter(
+        (t) =>
+          t.class === student.class &&
+          (t.section === student.section || t.section === 'all')
+      )
+      .forEach((t) => teacherIds.add(t.id))
+
     return [...teacherIds]
       .map((id) => data.teachers.find((t) => t.id === id))
       .filter(Boolean)
+      .sort((a, b) => {
+        if (a.id === student.teacherId) return -1
+        if (b.id === student.teacherId) return 1
+        return a.subject.localeCompare(b.subject)
+      })
   }
+
+  const addHoliday = (entry) => {
+    const newEntry = { ...entry, id: `hol-${Date.now()}` }
+    setData((prev) => ({
+      ...prev,
+      holidays: [...prev.holidays, newEntry].sort((a, b) =>
+        a.date.localeCompare(b.date)
+      ),
+    }))
+    return newEntry
+  }
+
+  const removeHoliday = (id) => {
+    setData((prev) => ({
+      ...prev,
+      holidays: prev.holidays.filter((h) => h.id !== id),
+    }))
+  }
+
+  const addSport = (entry) => {
+    const newEntry = { ...entry, id: `sport-${Date.now()}` }
+    setData((prev) => ({ ...prev, sports: [...prev.sports, newEntry] }))
+    return newEntry
+  }
+
+  const removeSport = (id) => {
+    setData((prev) => ({
+      ...prev,
+      sports: prev.sports.filter((s) => s.id !== id),
+    }))
+  }
+
+  const applyTeacherLeave = (entry) => {
+    const newEntry = {
+      ...entry,
+      id: `leave-${Date.now()}`,
+      status: 'pending',
+      appliedAt: new Date().toISOString().split('T')[0],
+    }
+    setData((prev) => ({
+      ...prev,
+      teacherLeaves: [newEntry, ...prev.teacherLeaves],
+    }))
+    return newEntry
+  }
+
+  const updateLeaveStatus = (id, status, reviewNote = '') => {
+    setData((prev) => ({
+      ...prev,
+      teacherLeaves: prev.teacherLeaves.map((l) =>
+        l.id === id
+          ? {
+              ...l,
+              status,
+              reviewNote: reviewNote || l.reviewNote,
+              reviewedAt: new Date().toISOString().split('T')[0],
+            }
+          : l
+      ),
+    }))
+  }
+
+  const getLeavesByTeacher = (teacherId) =>
+    data.teacherLeaves
+      .filter((l) => l.teacherId === teacherId)
+      .sort((a, b) => b.appliedAt.localeCompare(a.appliedAt))
+
+  const getPendingLeaves = () =>
+    data.teacherLeaves.filter((l) => l.status === 'pending')
 
   return (
     <SchoolContext.Provider
@@ -316,6 +414,14 @@ export function SchoolProvider({ children }) {
         getReportsForStudent,
         getReportsByTeacher,
         getTeachersForStudent,
+        addHoliday,
+        removeHoliday,
+        addSport,
+        removeSport,
+        applyTeacherLeave,
+        updateLeaveStatus,
+        getLeavesByTeacher,
+        getPendingLeaves,
       }}
     >
       {children}

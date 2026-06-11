@@ -1,20 +1,26 @@
 const programs = [
   {
-    level: 'Elementary',
-    grades: 'K – 5',
-    desc: 'Play-based learning that builds strong foundations in literacy, numeracy, and social skills.',
+    level: 'Pre-Primary',
+    grades: 'Nursery – UKG',
+    desc: 'Play-based early learning with rhymes, art, and foundational literacy in a nurturing environment.',
+    icon: '🧸',
+  },
+  {
+    level: 'Primary School',
+    grades: 'Class 1 – 5',
+    desc: 'Strong foundations in English, Mathematics, EVS, and languages with activity-based learning.',
     icon: '🌱',
   },
   {
     level: 'Middle School',
-    grades: '6 – 8',
-    desc: 'Exploratory courses and mentorship that help students discover interests and develop independence.',
+    grades: 'Class 6 – 8',
+    desc: 'Exploratory courses in Science, Social Studies, and skills that build independence and curiosity.',
     icon: '📚',
   },
   {
     level: 'High School',
-    grades: '9 – 12',
-    desc: 'Advanced placement, college counseling, and leadership programs for future-ready graduates.',
+    grades: 'Class 9 – 10',
+    desc: 'Board exam preparation, advanced subjects, and career guidance for future-ready graduates.',
     icon: '🎓',
   },
 ]
@@ -25,10 +31,10 @@ export default function Programs() {
       <div className="container">
         <div className="section-header center">
           <span className="section-label">Academics</span>
-          <h2 className="section-title">Programs for Every Stage</h2>
+          <h2 className="section-title">Nursery to Class 10</h2>
           <p className="section-desc center-desc">
-            From early childhood through graduation, our programs are designed
-            to meet students where they are and take them where they want to go.
+            A complete K–10 journey — from early childhood through secondary school,
+            designed to meet every student where they are.
           </p>
         </div>
         <div className="programs-grid">

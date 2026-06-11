@@ -47,11 +47,14 @@ export default function Contact() {
             Interested Program
             <select name="program" defaultValue="">
               <option value="" disabled>
-                Select a program
+                Select a class / program
               </option>
-              <option value="elementary">Elementary (K–5)</option>
-              <option value="middle">Middle School (6–8)</option>
-              <option value="high">High School (9–12)</option>
+              <option value="nursery">Nursery</option>
+              <option value="lkg">LKG</option>
+              <option value="ukg">UKG</option>
+              <option value="primary">Primary (Class 1–5)</option>
+              <option value="middle">Middle School (Class 6–8)</option>
+              <option value="high">High School (Class 9–10)</option>
             </select>
           </label>
           <label>

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import DashboardLayout from '../../components/DashboardLayout'
+import { TeacherAnalytics } from '../../components/DashboardAnalytics'
 import { useAuth } from '../../context/AuthContext'
 import { useSchool } from '../../context/SchoolContext'
+import { SCHOOL_CLASSES, formatClassLabel } from '../../data/seed'
 import './Dashboard.css'
 
 const emptyStudent = {
@@ -53,10 +55,12 @@ export default function TeacherDashboard() {
     addReport,
     removeReport,
     getReportsByTeacher,
+    applyTeacherLeave,
+    getLeavesByTeacher,
   } = useSchool()
 
   const students = getStudentsByTeacher(user.id)
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState('dashboard')
   const [showStudentForm, setShowStudentForm] = useState(false)
   const [studentForm, setStudentForm] = useState(emptyStudent)
 
@@ -88,6 +92,12 @@ export default function TeacherDashboard() {
     type: 'progress',
     remarks: '',
     rating: 'Good',
+  })
+
+  const [leaveForm, setLeaveForm] = useState({
+    fromDate: '',
+    toDate: '',
+    reason: '',
   })
 
   const handleNav = (id) => setActiveTab(id)
@@ -243,6 +253,14 @@ export default function TeacherDashboard() {
   const teacherNews = getNewsByTeacher(user.id)
   const teacherExams = getExamResultsByTeacher(user.id)
   const teacherReports = getReportsByTeacher(user.id)
+  const myLeaves = getLeavesByTeacher(user.id)
+
+  const handleApplyLeave = (e) => {
+    e.preventDefault()
+    applyTeacherLeave({ ...leaveForm, teacherId: user.id })
+    setLeaveForm({ fromDate: '', toDate: '', reason: '' })
+    alert('Leave request submitted to Principal for approval.')
+  }
   const daysInMonth = getDaysInMonth(attendanceMonth)
 
   return (
@@ -251,26 +269,34 @@ export default function TeacherDashboard() {
       activeNav={activeTab}
       onNavClick={handleNav}
     >
-      {activeTab === 'overview' && (
+      {activeTab === 'dashboard' && (
         <>
-          <div className="dash-stats">
-            <div className="dash-stat-card">
+          <div className="dash-stats dash-stats-pro">
+            <div className="dash-stat-card accent-navy">
               <span className="dash-stat-value">{students.length}</span>
               <span className="dash-stat-label">My Students</span>
             </div>
-            <div className="dash-stat-card">
+            <div className="dash-stat-card accent-gold">
               <span className="dash-stat-value">{user.subject}</span>
               <span className="dash-stat-label">Subject</span>
             </div>
-            <div className="dash-stat-card">
+            <div className="dash-stat-card accent-teal">
               <span className="dash-stat-value">{teacherNews.length}</span>
               <span className="dash-stat-label">News Posted</span>
             </div>
-            <div className="dash-stat-card">
+            <div className="dash-stat-card accent-orange">
               <span className="dash-stat-value">{teacherExams.length}</span>
               <span className="dash-stat-label">Results Published</span>
             </div>
           </div>
+
+          <section className="dash-section dashboard-analytics">
+            <div className="dash-section-header">
+              <h2>Class Analytics</h2>
+              <span className="dash-badge">Graphs & Results</span>
+            </div>
+            <TeacherAnalytics />
+          </section>
 
           <div className="overview-cards">
             <button type="button" className="overview-card" onClick={() => handleNav('syllabus')}>
@@ -660,12 +686,18 @@ export default function TeacherDashboard() {
               </label>
               <label>
                 Target Class
-                <input
+                <select
                   value={newsForm.targetClass}
                   onChange={(e) => setNewsForm({ ...newsForm, targetClass: e.target.value })}
-                  placeholder="10 or all"
                   required
-                />
+                >
+                  <option value="all">All Classes</option>
+                  {SCHOOL_CLASSES.map((cls) => (
+                    <option key={cls} value={cls}>
+                      {formatClassLabel(cls)}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label>
                 Target Section
@@ -702,7 +734,7 @@ export default function TeacherDashboard() {
                 </div>
                 <p>{item.body}</p>
                 <span className="news-target">
-                  Class {item.targetClass}
+                  {item.targetClass === 'all' ? 'All Classes' : formatClassLabel(item.targetClass)}
                   {item.targetSection !== 'all' ? `-${item.targetSection}` : ' (All Sections)'}
                   · {item.createdAt}
                 </span>
@@ -869,6 +901,78 @@ export default function TeacherDashboard() {
                 )}
               </tbody>
             </table>
+          </div>
+        </section>
+      )}
+
+      {activeTab === 'leave' && (
+        <section className="dash-section">
+          <div className="dash-section-header">
+            <h2>Apply for Leave</h2>
+          </div>
+          <form className="dash-form" onSubmit={handleApplyLeave}>
+            <div className="form-grid">
+              <label>
+                From Date
+                <input
+                  type="date"
+                  value={leaveForm.fromDate}
+                  onChange={(e) => setLeaveForm({ ...leaveForm, fromDate: e.target.value })}
+                  required
+                />
+              </label>
+              <label>
+                To Date
+                <input
+                  type="date"
+                  value={leaveForm.toDate}
+                  onChange={(e) => setLeaveForm({ ...leaveForm, toDate: e.target.value })}
+                  required
+                />
+              </label>
+              <label className="full-width">
+                Reason
+                <textarea
+                  value={leaveForm.reason}
+                  onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
+                  rows={4}
+                  placeholder="Please describe the reason for leave..."
+                  required
+                />
+              </label>
+            </div>
+            <button type="submit" className="btn btn-primary">
+              Submit Leave Request
+            </button>
+          </form>
+
+          <h3 className="subsection-title">My Leave History</h3>
+          <div className="leaves-list">
+            {myLeaves.map((leave) => (
+              <article
+                key={leave.id}
+                className={`leave-card status-${leave.status}`}
+              >
+                <div className="leave-card-header">
+                  <h3>
+                    {leave.fromDate} → {leave.toDate}
+                  </h3>
+                  <span className={`leave-status status-${leave.status}`}>
+                    {leave.status.charAt(0).toUpperCase() + leave.status.slice(1)}
+                  </span>
+                </div>
+                <p>{leave.reason}</p>
+                {leave.reviewNote && (
+                  <p className="review-note">
+                    <strong>Principal Note:</strong> {leave.reviewNote}
+                  </p>
+                )}
+                <span className="news-target">Applied {leave.appliedAt}</span>
+              </article>
+            ))}
+            {myLeaves.length === 0 && (
+              <p className="empty-message">No leave requests submitted yet.</p>
+            )}
           </div>
         </section>
       )}

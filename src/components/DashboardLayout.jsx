@@ -19,25 +19,31 @@ const roleBadges = {
 
 const navConfig = {
   [ROLES.PRINCIPAL]: [
-  { id: 'overview', label: 'Overview', icon: 'grid' },
-  { id: 'staff', label: 'Staff Management', icon: 'users' },
-  { id: 'students', label: 'All Students', icon: 'students' },
+    { id: 'dashboard', label: 'Dashboard', icon: 'grid' },
+    { id: 'schedule', label: 'Live Schedule', icon: 'clock' },
+    { id: 'staff', label: 'Teachers', icon: 'users' },
+    { id: 'timetable', label: 'Class Timetable', icon: 'calendar' },
+    { id: 'sports', label: 'Sports', icon: 'sport' },
+    { id: 'holidays', label: 'Holidays', icon: 'news' },
+    { id: 'leaves', label: 'Leave Approvals', icon: 'file' },
+    { id: 'students', label: 'All Students', icon: 'students' },
   ],
   [ROLES.TEACHER]: [
-    { id: 'overview', label: 'Overview', icon: 'grid' },
+    { id: 'dashboard', label: 'Dashboard', icon: 'grid' },
     { id: 'students', label: 'My Students', icon: 'students' },
     { id: 'syllabus', label: 'Syllabus', icon: 'book' },
     { id: 'attendance', label: 'Attendance', icon: 'calendar' },
     { id: 'news', label: 'News Updates', icon: 'news' },
     { id: 'results', label: 'Exam Results', icon: 'chart' },
     { id: 'reports', label: 'Reports', icon: 'file' },
+    { id: 'leave', label: 'Apply Leave', icon: 'calendar' },
   ],
   [ROLES.PARENT]: [
-    { id: 'overview', label: 'Dashboard', icon: 'grid' },
+    { id: 'dashboard', label: 'Dashboard', icon: 'grid' },
     { id: 'profile', label: 'Child Profile', icon: 'user' },
   ],
   [ROLES.STUDENT]: [
-    { id: 'overview', label: 'Dashboard', icon: 'grid' },
+    { id: 'dashboard', label: 'Dashboard', icon: 'grid' },
     { id: 'profile', label: 'My Profile', icon: 'user' },
     { id: 'syllabus', label: 'Syllabus', icon: 'book' },
     { id: 'attendance', label: 'Attendance', icon: 'calendar' },
@@ -100,10 +106,22 @@ function NavIcon({ name }) {
         <path d="M18 20V10M12 20V4M6 20v-6" />
       </svg>
     ),
+    clock: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 6v6l4 2" />
+      </svg>
+    ),
     file: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
         <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+      </svg>
+    ),
+    sport: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20M2 12h20" />
       </svg>
     ),
     home: (
@@ -132,7 +150,7 @@ function getInitials(name = '') {
 
 export default function DashboardLayout({
   title,
-  activeNav = 'overview',
+  activeNav = 'dashboard',
   onNavClick,
   children,
 }) {

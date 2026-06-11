@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import DashboardLayout from '../../components/DashboardLayout'
+import { StudentAnalytics } from '../../components/DashboardAnalytics'
 import { useAuth } from '../../context/AuthContext'
 import { useSchool } from '../../context/SchoolContext'
+import { formatClassLabel } from '../../data/seed'
 import './Dashboard.css'
 
 const ATTENDANCE_LABELS = {
@@ -42,7 +44,7 @@ export default function StudentDashboard() {
     getTeachersForStudent,
   } = useSchool()
 
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState('dashboard')
   const [attendanceMonth, setAttendanceMonth] = useState(currentMonth())
 
   const teacher = getTeacherById(user.teacherId)
@@ -63,24 +65,24 @@ export default function StudentDashboard() {
       activeNav={activeTab}
       onNavClick={handleNav}
     >
-      {(activeTab === 'overview' || activeTab === 'profile') && (
+      {(activeTab === 'dashboard' || activeTab === 'profile') && (
         <div className="profile-banner student-banner">
           <div>
             <span className="profile-roll">{user.rollNo}</span>
             <h2>Welcome, {user.name}</h2>
             <p>
-              Class {user.class} — Section {user.section}
+              {formatClassLabel(user.class)} — Section {user.section}
             </p>
           </div>
         </div>
       )}
 
-      {activeTab === 'overview' && (
+      {activeTab === 'dashboard' && (
         <>
-          <div className="dash-stats">
+          <div className="dash-stats dash-stats-pro">
             <button
               type="button"
-              className="dash-stat-card clickable"
+              className="dash-stat-card clickable accent-navy"
               onClick={() => handleNav('syllabus')}
             >
               <span className="dash-stat-value">{syllabus.length}</span>
@@ -88,7 +90,7 @@ export default function StudentDashboard() {
             </button>
             <button
               type="button"
-              className="dash-stat-card clickable"
+              className="dash-stat-card clickable accent-teal"
               onClick={() => handleNav('attendance')}
             >
               <span className="dash-stat-value">{attSummary.present}</span>
@@ -96,21 +98,29 @@ export default function StudentDashboard() {
             </button>
             <button
               type="button"
-              className="dash-stat-card clickable"
-              onClick={() => handleNav('news')}
+              className="dash-stat-card clickable accent-gold"
+              onClick={() => handleNav('teachers')}
             >
-              <span className="dash-stat-value">{news.length}</span>
-              <span className="dash-stat-label">News Updates</span>
+              <span className="dash-stat-value">{teachers.length}</span>
+              <span className="dash-stat-label">My Teachers</span>
             </button>
             <button
               type="button"
-              className="dash-stat-card clickable"
+              className="dash-stat-card clickable accent-orange"
               onClick={() => handleNav('results')}
             >
               <span className="dash-stat-value">{examResults.length}</span>
               <span className="dash-stat-label">Exam Results</span>
             </button>
           </div>
+
+          <section className="dash-section dashboard-analytics">
+            <div className="dash-section-header">
+              <h2>My Performance</h2>
+              <span className="read-only-badge">Analytics</span>
+            </div>
+            <StudentAnalytics />
+          </section>
 
           <div className="overview-cards">
             <button type="button" className="overview-card" onClick={() => handleNav('syllabus')}>
@@ -191,6 +201,18 @@ export default function StudentDashboard() {
                 <dd>{teacher?.subject || '—'}</dd>
               </div>
               <div>
+                <dt>Class</dt>
+                <dd>
+                  {teacher?.class
+                    ? `${formatClassLabel(teacher.class)} — Section ${teacher.section}`
+                    : '—'}
+                </dd>
+              </div>
+              <div>
+                <dt>Class Time</dt>
+                <dd>{teacher?.classTime || '—'}</dd>
+              </div>
+              <div>
                 <dt>Contact</dt>
                 <dd>{teacher?.phone || '—'}</dd>
               </div>
@@ -202,7 +224,7 @@ export default function StudentDashboard() {
       {activeTab === 'syllabus' && (
         <section className="dash-section">
           <div className="dash-section-header">
-            <h2>Syllabus — Class {user.class}-{user.section}</h2>
+            <h2>Syllabus — {formatClassLabel(user.class)}-{user.section}</h2>
             <span className="read-only-badge">View Only</span>
           </div>
           {syllabus.length === 0 ? (
@@ -410,33 +432,44 @@ export default function StudentDashboard() {
             <h2>My Teachers</h2>
             <span className="read-only-badge">View Only</span>
           </div>
-          <div className="teachers-grid">
-            {teachers.map((t) => (
-              <article
-                key={t.id}
-                className={`teacher-card ${t.id === user.teacherId ? 'primary' : ''}`}
-              >
-                {t.id === user.teacherId && (
-                  <span className="teacher-badge">Class Teacher</span>
-                )}
-                <h3>{t.name}</h3>
-                <dl>
-                  <div>
-                    <dt>Subject</dt>
-                    <dd>{t.subject}</dd>
-                  </div>
-                  <div>
-                    <dt>Email</dt>
-                    <dd>{t.email}</dd>
-                  </div>
-                  <div>
-                    <dt>Phone</dt>
-                    <dd>{t.phone}</dd>
-                  </div>
-                </dl>
-              </article>
-            ))}
-          </div>
+          {teachers.length === 0 ? (
+            <p className="empty-message">No teachers assigned for your class yet.</p>
+          ) : (
+            <div className="teachers-grid">
+              {teachers.map((t) => (
+                <article
+                  key={t.id}
+                  className={`teacher-card ${t.id === user.teacherId ? 'primary' : ''}`}
+                >
+                  {t.id === user.teacherId && (
+                    <span className="teacher-badge">Class Teacher</span>
+                  )}
+                  <h3>{t.name}</h3>
+                  <span className="teacher-subject-tag">{t.subject}</span>
+                  <dl>
+                    <div>
+                      <dt>Class</dt>
+                      <dd>
+                        {formatClassLabel(t.class)} — Section {t.section}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Class Time</dt>
+                      <dd className="teacher-time">{t.classTime || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt>Email</dt>
+                      <dd>{t.email}</dd>
+                    </div>
+                    <div>
+                      <dt>Phone</dt>
+                      <dd>{t.phone}</dd>
+                    </div>
+                  </dl>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       )}
     </DashboardLayout>
